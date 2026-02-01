@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Registration Success</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      background-color: #ffffff;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 30px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+    }
+    .header {
+      font-size: 24px;
+      color: #2c3e50;
+      margin-bottom: 20px;
+    }
+    .content {
+      font-size: 16px;
+      color: #333333;
+      line-height: 1.6;
+    }
+    .highlight {
+      font-weight: bold;
+      color: #d35400;
+    }
+    .button {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #3498db;
+      color: #ffffff !important;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+    .footer {
+      margin-top: 30px;
+      font-size: 14px;
+      color: #999999;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">Hi {FULLNAME},</div>
+    <div class="content">
+      <p>Your registration is <strong>successful</strong>.</p>
+      <p>Please use the details below to unlock your account:</p>
+      <p>Temporary Password: <span class="highlight">{TEMP-PWD}</span></p>
+      <p>
+        <a href="{URL}" class="button">Click to Unlock Your Account</a>
+      </p>
+      <p class="footer">
+        Thanks,<br>
+        Admin Team
+      </p>
+    </div>
+  </div>
+</body>
+</html>
