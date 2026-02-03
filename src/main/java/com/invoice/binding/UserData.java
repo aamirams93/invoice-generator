@@ -1,5 +1,6 @@
 package com.invoice.binding;
 
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
@@ -9,7 +10,8 @@ public class UserData
 
 	private String emailId;
 
-	private Long mobileNo;
+	@Size(min = 8)
+	private String mobileNo;
 
 	private String gender;
 

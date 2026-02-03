@@ -12,6 +12,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.invoice.binding.SuperUser;
 import com.invoice.binding.UserAddingData;
 import com.invoice.binding.UserData;
 import com.invoice.exception.BusinessException;
@@ -53,75 +54,80 @@ public class UserManagementServiceImpl implements UserService
 
 	@Override
 	@Transactional
-	public boolean saveUser(UserAddingData userData,String ip) {
+	public boolean saveUser(UserAddingData userData, String ip)
+	{
 
-	    if (repo.existsByEmailId(userData.getEmailId())) {
-	        throw new BusinessException("EMAIL_EXISTS", "Email already exists");
-	    }
+		if (repo.existsByEmailId(userData.getEmailId()))
+		{
+			throw new BusinessException("EMAIL_EXISTS", "Email already exists");
+		}
 
-	    if (repo.existsByMobileNo(userData.getMobileNo())) {
-	        throw new BusinessException("MOBILE_EXISTS", "Mobile number already exists");
-	    }
+		if (repo.existsByMobileNo(userData.getMobileNo()))
+		{
+			throw new BusinessException("MOBILE_EXISTS", "Mobile number already exists");
+		}
 
-	    try {
-	        UserEntity entity = new UserEntity();
-	        BeanUtils.copyProperties(userData, entity);
+		try
+		{
+			UserEntity entity = new UserEntity();
+			BeanUtils.copyProperties(userData, entity);
 
-	        entity.setIpAddress(ip);
-	        entity.setAccStatus(true);
-	        entity.setCreatedDate(new Date());
+			entity.setIpAddress(ip);
+			entity.setAccStatus(true);
+			entity.setCreatedDate(new Date());
 
-	        UserEntity savedUser = repo.save(entity);
+			UserEntity savedUser = repo.save(entity);
 
-	        Authorities auth = new Authorities();
-	        auth.setEmail(userData.getEmailId());
-	        auth.setAuthority("ROLE_USER");
-	        authRepo.save(auth);
+			Authorities auth = new Authorities();
+			auth.setEmailId(userData.getEmailId());
+			auth.setAuthority("ROLE_USER");
+			authRepo.save(auth);
 
-	        return savedUser.getUserNo() != null;
+			return savedUser.getUserNo() != null;
 
-	    } catch (DataIntegrityViolationException e) {
-	        log.error("Duplication error while creating account for {}", userData.getEmailId(), e);
-	        throw new BusinessException("DATA_INTEGRITY_ERROR", "Duplicate data found");
-	    } catch (Exception e) {
-	        log.error("Unexpected error while creating account for {}", userData.getEmailId(), e);
-	        throw new BusinessException("ACCOUNT_CREATION_FAILED", "Failed to create account");
-	    }
+		} catch (DataIntegrityViolationException e)
+		{
+			log.error("Duplication error while creating account for {}", userData.getEmailId(), e);
+			throw new BusinessException("DATA_INTEGRITY_ERROR", "Duplicate data found");
+		} catch (Exception e)
+		{
+			log.error("Unexpected error while creating account for {}", userData.getEmailId(), e);
+			throw new BusinessException("ACCOUNT_CREATION_FAILED", "Failed to create account");
+		}
 	}
-	
-	
+
 	@Transactional
-	public void generateEmailOtp(UserData userData) {
+	public void generateEmailOtp(UserData userData)
+	{
 
-	    if (userData.getEmailId() == null || userData.getEmailId().isBlank()) {
-	        throw new BusinessException("INVALID_EMAIL", "Email must not be empty");
-	    }
+		if (userData.getEmailId() == null || userData.getEmailId().isBlank())
+		{
+			throw new BusinessException("INVALID_EMAIL", "Email must not be empty");
+		}
 
-	    UserEntity entity = repo.findByEmailId(userData.getEmailId())
-	            .orElseThrow(() -> new BusinessException("USER_NOT_FOUND",
-	                    "User not found with email: " + userData.getEmailId()));
+		UserEntity entity = repo.findByEmailId(userData.getEmailId()).orElseThrow(
+				() -> new BusinessException("USER_NOT_FOUND", "User not found with email: " + userData.getEmailId()));
 
-	    try {
-	        String tempPassword = LoginCredValidator.randomP();
+		try
+		{
+			String tempPassword = LoginCredValidator.randomP();
 
-	        repo.updateOtpAndPassword(
-	                entity.getEmailId(),
-	                passwordEncoder.encode(tempPassword),
-	                entity.getOtpCreationTime()
-	        );
+			repo.updateOtpAndPassword(entity.getEmailId(), passwordEncoder.encode(tempPassword),
+					entity.getOtpCreationTime());
 
-	        String subject = "Registration";
-	        String name = entity.getFullName();
-	        String body = emailutils.readEmailBody("new-account.html", name, tempPassword);
+			String subject = "Registration";
+			String name = entity.getFullName();
+			String body = emailutils.readEmailBody("new-account.html", name, tempPassword);
 
-	       emailutils.sendEmailAsync(entity.getEmailId(), subject, body);
+			emailutils.sendEmailAsync(entity.getEmailId(), subject, body);
 
-	        log.info("OTP generated and email sent for user: {}", entity.getEmailId());
+			log.info("OTP generated and email sent for user: {}", entity.getEmailId());
 
-	    } catch (Exception e) {
-	        log.error("Failed to process OTP email for user: {}", entity.getEmailId(), e);
-	        throw new BusinessException("EMAIL_SEND_FAILED", "Failed to send OTP email");
-	    }
+		} catch (Exception e)
+		{
+			log.error("Failed to process OTP email for user: {}", entity.getEmailId(), e);
+			throw new BusinessException("EMAIL_SEND_FAILED", "Failed to send OTP email");
+		}
 	}
 
 	public void logLoginSuccess(String email, String ip)
@@ -160,7 +166,7 @@ public class UserManagementServiceImpl implements UserService
 		}
 
 		// ❌ If already logged in
-		throw new BusinessException("Email Id Already Login","Email Id is Already Login Please Logout");
+		throw new BusinessException("Email Id Already Login", "Email Id is Already Login Please Logout");
 	}
 
 	@Transactional
@@ -183,7 +189,7 @@ public class UserManagementServiceImpl implements UserService
 			login.setLockedStatus("N");
 			login.setLoggedStatus("N");
 			loginRepo.save(login);
-			throw new BusinessException("Logout Succesflly","User Logout Suceessfully");
+			throw new BusinessException("Logout Succesflly", "User Logout Suceessfully");
 		}
 	}
 
@@ -201,7 +207,6 @@ public class UserManagementServiceImpl implements UserService
 		}
 		return user;
 	}
-
 
 	@Override
 	public boolean changeStatus(Integer userId, boolean accStatus)
@@ -238,6 +243,95 @@ public class UserManagementServiceImpl implements UserService
 		return null;
 	}
 
+	@Override
+	@Transactional
+	public boolean saveSuperUser(SuperUser userData, String ip)
+	{
+
+		if (repo.existsByEmailId(userData.getEmailId()))
+		{
+			throw new BusinessException("EMAIL_EXISTS", "Email already exists");
+		}
+
+		if (repo.existsByMobileNo(userData.getMobileNo()))
+		{
+			throw new BusinessException("MOBILE_EXISTS", "Mobile number already exists");
+		}
+		String authority = userData.getAuthority();
+
+		if (authority == null || authority.isBlank() || (!"ADMIN".equals(authority) && !"MANAGER".equals(authority)))
+		{
+
+			throw new BusinessException("ROLE_NOT_FOUND", "Role must be ADMIN or MANAGER");
+		}
+
+		try
+		{
+			UserEntity entity = new UserEntity();
+			BeanUtils.copyProperties(userData, entity);
+			entity.setIpAddress(ip);
+			entity.setAccStatus(true);
+			entity.setCreatedDate(new Date());
+
+			Authorities auth = new Authorities();
+
+			auth.setEmailId(userData.getEmailId());
+			auth.setAuthority("ROLE_" + userData.getAuthority());
+			authRepo.save(auth);
+			UserEntity savedUser = repo.save(entity);
+
+			return savedUser.getUserNo() != null;
+
+		} catch (DataIntegrityViolationException e)
+		{
+			log.error("Duplication error while creating account for {}", userData.getEmailId(), e);
+			throw new BusinessException("DATA_INTEGRITY_ERROR", "Duplicate data found");
+		} catch (Exception e)
+		{
+			log.error("Unexpected error while creating account for {}", userData.getEmailId(), e);
+			throw new BusinessException("ACCOUNT_CREATION_FAILED", "Failed to create account");
+		}
+	}
+	
+//	@Transactional
+//	public boolean saveSuperUser(SuperUser userData, String ip) {
+//
+//	    if (repo.existsByEmailId(userData.getEmailId())) {
+//	        throw new BusinessException("EMAIL_EXISTS", "Email already exists");
+//	    }
+//
+//	    if (repo.existsByMobileNo(userData.getMobileNo())) {
+//	        throw new BusinessException("MOBILE_EXISTS", "Mobile number already exists");
+//	    }
+//
+//	    String authority = userData.getAuthority();
+//	    if (!List.of("ADMIN", "MANAGER").contains(authority)) {
+//	        throw new BusinessException("ROLE_NOT_FOUND", "Role must be ADMIN or MANAGER");
+//	    }
+//
+//	    try {
+//	        UserEntity entity = new UserEntity();
+//	        entity.setFullName(userData.getFullName());
+//	        entity.setEmailId(userData.getEmailId());
+//	        entity.setMobileNo(userData.getMobileNo());
+//	        entity.setGender(userData.getGender());
+//	        entity.setIpAddress(ip);
+//	        entity.setAccStatus(true);
+//	        entity.setCreatedDate(new Date());
+//
+//	        UserEntity savedUser = repo.save(entity);
+//
+//	        Authorities auth = new Authorities();
+//	        auth.setEmailId(userData.getEmailId()); // 👈 BEST
+//	        auth.setAuthority("ROLE_" + authority);
+//	        authRepo.save(auth);
+//
+//	        return true;
+//
+//	    } catch (DataIntegrityViolationException e) {
+//	        throw new BusinessException("DATA_INTEGRITY_ERROR", "Duplicate data found");
+//	    }
+//	}
 
 
 }

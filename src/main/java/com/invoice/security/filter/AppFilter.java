@@ -35,7 +35,6 @@ public class AppFilter extends OncePerRequestFilter
 	private final RateLimitService rateLimitService;
 	private static final Logger log = LoggerFactory.getLogger(AppFilter.class);
 
-
 	private static final Set<String> RATE_LIMITED_APIS = Set.of("/api/v1/auth/login", "/api/v1/auth/add",
 			"/api/v1/auth/motp"
 
@@ -47,17 +46,12 @@ public class AppFilter extends OncePerRequestFilter
 	{
 
 		String uri = request.getRequestURI();
-		
-		// Secure Headers XSS , Clickjacking , MIME sniffing
 
-		setSecurityHeaders(response);
-
-
-		//  Rate limit only selected APIs
+		// Rate limit only selected APIs
 		isRateLimited(uri, request, response);
-		
+	
 
-		//  JWT processing for secured APIs
+		// JWT processing for secured APIs
 		String authHeader = request.getHeader("Authorization");
 
 		if (authHeader != null && authHeader.startsWith("Bearer "))
@@ -107,7 +101,9 @@ public class AppFilter extends OncePerRequestFilter
 	private boolean isRateLimited(String uri, HttpServletRequest request, HttpServletResponse response)
 			throws IOException
 	{
-		
+
+		setSecurityHeaders(response);
+
 		if (RATE_LIMITED_APIS.contains(uri))
 		{
 			String ip = request.getRemoteAddr();
@@ -122,16 +118,17 @@ public class AppFilter extends OncePerRequestFilter
 		}
 		return false;
 	}
-	
-	private void setSecurityHeaders(HttpServletResponse response) {
-	    response.setHeader("X-Content-Type-Options", "nosniff");
-	    response.setHeader("X-Frame-Options", "DENY");
-	    response.setHeader("Content-Security-Policy", "default-src 'self';");
-	    log.info("---------- Current Response Headers ----------");
-	    response.getHeaderNames().forEach(headerName -> 
-	        log.info(headerName + ": " + response.getHeader(headerName))
-	    );
-	    log.info("----------------------------------------------");	}
+
+	private void setSecurityHeaders(HttpServletResponse response)
+	{
+		response.setHeader("X-Content-Type-Options", "nosniff");
+		response.setHeader("X-Frame-Options", "DENY");
+		response.setHeader("Content-Security-Policy", "default-src 'self';");
+		log.info("---------- Current Response Headers ----------");
+		response.getHeaderNames().forEach(headerName -> 
+		log.info(headerName + ": " + response.getHeader(headerName)));
+		log.info("----------------------------------------------");
+	}
 
 	private void sendUnauthorized(HttpServletResponse response, String msg) throws IOException
 	{

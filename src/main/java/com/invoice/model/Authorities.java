@@ -18,7 +18,7 @@ public class Authorities
 	private Integer id;
 
 	@Column(name = "CUSTOMER_EMAIL_ID")
-	private String email;
+	private String emailId;
 
 	@Column(name = "CUSTOMER_ROLE")
 	private String authority;

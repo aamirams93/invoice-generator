@@ -7,6 +7,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
@@ -77,6 +78,11 @@ public class JwtService {
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
+    
+//    public String extractRoles(String token)
+//    {
+//    	return 
+//    }
 
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
@@ -124,17 +130,6 @@ public class JwtService {
         Map<String, Object> claims = new HashMap<>();
         return createToken(claims, username,1000 * 60 * 5);
     }
-    
-    
-//    public String generateAccessToken(MyUserDetailsService userDetails) {
-//        Map<String, Object> claims = new HashMap<>();
-//        claims.put("userId", userDetails.); // unique ID from DB
-//        claims.put("email", "test@gmail.com");
-//        claims.put("roles", userDetails.getAuthorities());
-//        claims.put("type", "access");
-//
-//        return createToken(claims, userDetails.getUsername(), 1000 * 60 * 5);
-//    }
 
     public String generateRefreshToken(String username) {
         return createToken(
@@ -157,9 +152,29 @@ public class JwtService {
         Claims claims = extractAllClaims(token);
         return "REFRESH".equals(claims.get("type"));
     }
-
     
-    private String createToken(Map<String, Object> claims, String username, long expirationMillis) {
+    public String generateAccesToken2(String username, List<String> roles) {
+        return createToken2(
+                Map.of("type", "ACCESS"),
+                username,roles,
+                1000L * 60  * 24 * 7
+        );
+    }
+
+    private String createToken2(Map<String, Object> claims, String username,List<String> roles,long expirationMillis) {
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(username)
+                .claim("roles",roles)
+                .setId(UUID.randomUUID().toString()) // jti
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + expirationMillis))
+                .signWith(privateKey, SignatureAlgorithm.RS256)
+                .compact();
+    }
+    
+    
+    private String createToken(Map<String, Object> claims, String username,long expirationMillis) {
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(username)

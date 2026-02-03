@@ -1,5 +1,6 @@
 package com.invoice.model;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -32,7 +33,7 @@ public class ProductItems
     private Integer productCategoryId;
     
     @Column(name ="PRODUCT_PRICE", nullable = false )
-    private Long productPrice;
+    private BigDecimal productPrice;
     
     @Column(name ="PRODUCT_QUANTITY", nullable = false )
     private Integer productQuantity;

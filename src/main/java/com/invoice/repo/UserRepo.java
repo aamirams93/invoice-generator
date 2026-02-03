@@ -21,7 +21,7 @@ public interface UserRepo extends JpaRepository<UserEntity, Integer>
 	public UserEntity findByEmailIdAndPassword(String emailId, String password);
 	
 	Optional<UserEntity> findByEmailId(String email);
-	Optional<UserEntity> findByMobileNo(Long mobileNo);
+	Optional<UserEntity> findByMobileNo(String mobileNo);
 
 	@Query("SELECT u.userNo FROM UserEntity u WHERE u.emailId = :email")
 	String findUserNoByEmailId(String email);
@@ -40,6 +40,6 @@ public interface UserRepo extends JpaRepository<UserEntity, Integer>
 
 	boolean existsByEmailId(String emailId);
 
-	boolean existsByMobileNo(Long mobileNo);
+	boolean existsByMobileNo(String mobileNo);
 
 }

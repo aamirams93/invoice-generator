@@ -22,10 +22,10 @@ import lombok.Data;
 public class UserEntity
 {
 	@Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_no_seq")
-    @SequenceGenerator(name = "user_no_seq", sequenceName = "user_no_sequence", allocationSize = 1)
-    @Column(name = "USER_NO", nullable = false, unique = true)
-    private Long userNo; // 6-digit sequential user number
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_no_seq")
+	@SequenceGenerator(name = "user_no_seq", sequenceName = "user_no_sequence", allocationSize = 1)
+	@Column(name = "USER_NO", nullable = false, unique = true)
+	private Long userNo; // 6-digit sequential user number
 
 	@Column(name = "CUSTOMER_NAME", nullable = false)
 	private String fullName;
@@ -35,9 +35,11 @@ public class UserEntity
 	@Size(min = 8)
 	@Column(name = "CUSTOMER_EMAIL_ID")
 	private String emailId;
+	
 
 	@Column(name = "COMPANY_MOBILE_NO", nullable = false)
-	private Long mobileNo;
+	@Size(min = 10)
+	private String mobileNo;
 
 	@Column(name = "GENDER", nullable = false)
 	private String gender;
@@ -48,31 +50,33 @@ public class UserEntity
 	@Column(name = "CUSTOMER_PASSWORD")
 	private String password;
 
-	@Column(name = "OTP_CREATION_TIME",nullable = true)
+	@Column(name = "OTP_CREATION_TIME", nullable = true)
 	private Date otpCreationTime;
 
 	@Column(name = "CREATED_DATE", updatable = false)
-	private  Date createdDate;
+	private Date createdDate;
 
 	@Column(name = "UPDATED_DATE", insertable = false)
 	private Date updatedDate;
 
 	@Column(name = "CUSTOMER_IP_ADDRESS")
 	private String ipAddress;
-	
-	@Column(name = "Company_Name")
+
+	@Column(name = "COMPANY_NAME")
 	private String companyName;
-	
-	@Column(name = "Company_Address")
+
+	@Column(name = "COMPANY_ADDRESS")
 	private String companyAddress;
-	
 
-	
+	public String getUserNo()
+	{
+		return String.format("IRF%03d", this.userNo);
+	}
 
-	
-	   @PostConstruct
-	    public void init(){
-	      TimeZone.setDefault(TimeZone.getTimeZone("Asia/Kolkata"));
-	    }
+	@PostConstruct
+	public void init()
+	{
+		TimeZone.setDefault(TimeZone.getTimeZone("Asia/Kolkata"));
+	}
 
 }

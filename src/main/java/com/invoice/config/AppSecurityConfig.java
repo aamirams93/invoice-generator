@@ -8,6 +8,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -19,6 +20,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.invoice.exception.CustomAccessDeniedHandler;
 import com.invoice.security.filter.AppFilter;
 import com.invoice.service.MyUserDetailsService;
 
@@ -26,12 +28,15 @@ import lombok.AllArgsConstructor;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 @AllArgsConstructor
 public class AppSecurityConfig
 {
 
 	private final AppFilter filter;
 	private final MyUserDetailsService userDtlsSvc;
+	public final CustomAccessDeniedHandler customAccessdeniesHandler;
+
 	
 	// ---------------- PASSWORD ENCODER ----------------
 
@@ -57,7 +62,7 @@ public class AppSecurityConfig
 		
 				.csrf(csrf -> csrf.disable())
 
-				// Enforce HTTPS in production
+				// Enforce HTTPS 
 				.requiresChannel(channel -> channel.anyRequest().requiresSecure())
 
 				// CORS
@@ -75,6 +80,10 @@ public class AppSecurityConfig
 						.requestMatchers("/api/v1/logout").hasRole("USER")
 
 						.anyRequest().authenticated())
+				
+//				.exceptionHandling(ex -> ex
+//			            .accessDeniedHandler(customAccessdeniesHandler))
+			        
 
 				.authenticationProvider(authenticationProvider())
 

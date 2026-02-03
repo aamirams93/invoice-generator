@@ -8,5 +8,5 @@ import com.invoice.model.ProductItems;
 
 public interface ProductItemsRepo extends JpaRepository<ProductItems, Serializable>
 {
-
+	public ProductItems findByProductName(String productName);
 }

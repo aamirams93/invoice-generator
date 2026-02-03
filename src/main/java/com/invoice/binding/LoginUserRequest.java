@@ -8,5 +8,5 @@ public class LoginUserRequest
 	private String emailId;
 
 	private String password;
-
+	
 }

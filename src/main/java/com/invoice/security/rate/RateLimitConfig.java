@@ -4,15 +4,13 @@ import java.time.Duration;
 
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
-import io.github.bucket4j.Bucket4j;
 import io.github.bucket4j.Refill;
 
 public class RateLimitConfig {
 
     // Login: 5 requests per minute
-    @SuppressWarnings("deprecation")
 	public static Bucket loginBucket() {
-        return Bucket4j.builder()
+        return Bucket.builder()
                 .addLimit(Bandwidth.classic(
                         5,
                         Refill.intervally(5, Duration.ofMinutes(1))
@@ -21,9 +19,8 @@ public class RateLimitConfig {
     }
 
     // Register: 2 requests per minute
-    @SuppressWarnings("deprecation")
     public static Bucket registerBucket() {
-        return Bucket4j.builder()
+        return Bucket.builder()
                 .addLimit(Bandwidth.classic(
                         2,
                         Refill.intervally(2, Duration.ofMinutes(1))
@@ -32,12 +29,11 @@ public class RateLimitConfig {
     }
 
     // OTP: 3 requests per minute
-    @SuppressWarnings("deprecation")
     public static Bucket otpBucket() {
-        return Bucket4j.builder()
+        return Bucket.builder()
                 .addLimit(Bandwidth.classic(
-                        5,
-                        Refill.intervally(5, Duration.ofMinutes(1))
+                        1,
+                        Refill.intervally(1, Duration.ofMinutes(1))
                 ))
                 .build();
     }
