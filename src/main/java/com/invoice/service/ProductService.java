@@ -18,7 +18,7 @@ public interface ProductService
     
     public ProductItems getProductById(Integer planId);
     
-    public boolean updateProduct(ProductItems plan);
+    public boolean updateProduct(ProductItemsReq productName,String email);
         
     public boolean statusChange(Integer planId,String status);
 

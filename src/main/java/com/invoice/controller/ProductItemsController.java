@@ -24,9 +24,17 @@ public class ProductItemsController
 	
 	
 	@PostMapping("/add")
-	public ResponseEntity<String> addCategory(@RequestBody  ProductItemsReq plan, @AuthenticationPrincipal UserDetails user)
+	public ResponseEntity<String> add(@RequestBody  ProductItemsReq plan, @AuthenticationPrincipal UserDetails user)
 	{
 		service.savePlan(plan, user.getUsername());
+		
+		return new ResponseEntity<>("Save",HttpStatus.ACCEPTED);
+	}
+	
+	@PostMapping("/update")
+	public ResponseEntity<String> update(@RequestBody  ProductItemsReq plan, @AuthenticationPrincipal UserDetails user)
+	{
+		service.updateProduct(plan, user.getUsername());
 		
 		return new ResponseEntity<>("Save",HttpStatus.ACCEPTED);
 	}

@@ -59,7 +59,8 @@ public class BuyerOrderServiceImpl implements BuyerOrderService
 		for (OrderItemReq itemReq : req.getItems())
 		{
 
-			ProductItems product = productRepo.findByProductName(itemReq.getProductName());
+			ProductItems product = productRepo.findByProductName(itemReq.getProductName())
+					.orElseThrow(() -> new BusinessException("Product not found", "NOT_FOUND_CODE"));
 			if (product == null)
 			{
 				throw new BusinessException("Product not found", itemReq.getProductName());

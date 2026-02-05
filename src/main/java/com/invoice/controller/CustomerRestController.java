@@ -56,10 +56,13 @@ public class CustomerRestController
 
 
 	@GetMapping("/welcome")
+	@PreAuthorize("hasRole('USER')")
 	public String welcome()
 	{
-		return "welcome to Man Made";
+		return "welcome user";
 	}
+	
+	
 	
 	
 

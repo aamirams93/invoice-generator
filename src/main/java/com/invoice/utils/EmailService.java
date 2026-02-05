@@ -8,9 +8,11 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.AllArgsConstructor;
 
+import org.springframework.core.io.ByteArrayResource;
 @Component
 @AllArgsConstructor
 public class EmailService
@@ -28,11 +30,32 @@ public class EmailService
 			helper.setSubject(subject);
 			helper.setText(body, true);
 			mailSender.send(message);
-		} catch (Exception e)
+		} catch (MessagingException e)
 		{
 			e.printStackTrace();
 		}
 	}
+	
+	// for sending report as attachment
+	public void sendEmailWithAttachment(String to, String subject, String fileName, byte[] content) {
+	    try {
+	        MimeMessage message = mailSender.createMimeMessage();
+	        
+	        // 'true' indicates this is a multipart message (required for attachments)
+	        MimeMessageHelper helper = new MimeMessageHelper(message, true);
+	        
+	        helper.setTo(to);
+	        helper.setSubject(subject);
+	        helper.setText("Please find your report attached.");
+
+	        // Add the attachment
+	        helper.addAttachment(fileName, new ByteArrayResource(content));
+
+	        mailSender.send(message);
+	    } catch (MessagingException e) {
+	        // Log the error
+	        e.printStackTrace();
+	    }}
 
 	public String readEmailBody(String fileName, String fullname, String tempPassword)
 	{

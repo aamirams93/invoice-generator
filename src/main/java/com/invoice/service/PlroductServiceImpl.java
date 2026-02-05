@@ -10,9 +10,11 @@ import org.springframework.stereotype.Service;
 
 import com.invoice.binding.ProductItemsReq;
 import com.invoice.exception.BusinessException;
+import com.invoice.model.GstTax;
 import com.invoice.model.ProductCategory;
 import com.invoice.model.ProductItems;
 import com.invoice.model.UserEntity;
+import com.invoice.repo.GstRepo;
 import com.invoice.repo.ProductCategoryRepo;
 import com.invoice.repo.ProductItemsRepo;
 import com.invoice.repo.UserRepo;
@@ -25,38 +27,41 @@ import lombok.RequiredArgsConstructor;
 public class PlroductServiceImpl implements ProductService
 {
 
-	private final ProductItemsRepo prodcutRepo;
+	private final ProductItemsRepo productRepo;
 
 	private final ProductCategoryRepo productCategoryRepo;
-	
+
 	private final UserRepo userRepo;
-	
-	
+
+	private final GstRepo gstRepo;
+
 	@Override
 	@Transactional
 	public boolean savePlan(ProductItemsReq plan, String email)
 	{
-	    ProductItems entity = new ProductItems();
+		ProductItems entity = new ProductItems();
 
-	    BeanUtils.copyProperties(plan, entity);
+		BeanUtils.copyProperties(plan, entity);
 
-	    UserEntity user = userRepo.findByEmailId(email)
-	            .orElseThrow(() -> new BusinessException("User not found",""));
+		UserEntity user = userRepo.findByEmailId(email).orElseThrow(() -> new BusinessException("User not found", ""));
 
-	    ProductCategory category = productCategoryRepo.findByCategoryName(plan.getCategoryName())
-	    	    .orElseThrow(() -> new BusinessException("Category not found", "NOT_FOUND_CODE"));
+		ProductCategory category = productCategoryRepo.findByCategoryName(plan.getCategoryName())
+				.orElseThrow(() -> new BusinessException("Category not found", "NOT_FOUND_CODE"));
 
-	    entity.setProductCategoryId(category.getCategoryid());
-	    entity.setActiveSw("ACTIVE");
-	    entity.setCreatedBy(user.getFullName());
+		GstTax gst = gstRepo.findById(plan.getHsnCode())
+				.orElseThrow(() -> new BusinessException("GST details not found for HSN Code: " + plan.getHsnCode(),
+						"NOT_FOUND_CODE"));
 
-	    ProductItems saved = prodcutRepo.save(entity);
+		entity.setProductCategoryId(category.getCategoryid());
+		entity.setTotalGst(Math.round(gst.getCGst() + gst.getSGst() + gst.getIGst()));
+		entity.setActiveSw("ACTIVE");
+		entity.setCreatedBy(user.getFullName());
 
-	    return saved.getProductId() != null;
+		ProductItems saved = productRepo.save(entity);
+
+		return saved.getProductId() != null;
 	}
 
-	
-	
 	@Override
 	public Map<Integer, String> getProductCategory()
 	{
@@ -70,9 +75,9 @@ public class PlroductServiceImpl implements ProductService
 
 	@Override
 	public ProductItems getProductById(Integer planId)
-	{ 
-		Optional<ProductItems> findByid = prodcutRepo.findById(planId);
-			
+	{
+		Optional<ProductItems> findByid = productRepo.findById(planId);
+
 		if (findByid.isPresent())
 		{
 			return findByid.get();
@@ -84,20 +89,37 @@ public class PlroductServiceImpl implements ProductService
 	}
 
 	@Override
-	public boolean updateProduct(ProductItems product)
+	@Transactional
+	public boolean updateProduct(ProductItemsReq productReq, String email)
 	{
-		ProductItems saved = prodcutRepo.save(product);
-		return saved.getProductId() != null;
+
+		UserEntity user = userRepo.findByEmailId(email)
+				.orElseThrow(() -> new BusinessException("User not found", "Not Found"));
+
+		ProductItems product = productRepo.findByProductName(productReq.getProductName())
+				.orElseThrow(() -> new BusinessException("Product not found", "NOT_FOUND_CODE"));
+		GstTax gst = gstRepo.findById(productReq.getHsnCode())
+				.orElseThrow(() -> new BusinessException("GST details not found for HSN Code: " + productReq.getHsnCode(),
+						"NOT_FOUND_CODE"));
+		product.setProductName(productReq.getProductName());
+		product.setProductQuantity(productReq.getProductQuantity());
+		product.setHsnCode(productReq.getHsnCode());
+		product.setTotalGst(Math.round(gst.getCGst() + gst.getSGst() + gst.getIGst()));
+		product.setProductPrice(productReq.getProductPrice());
+		product.setUpdatedBy(user.getFullName());
+		productRepo.save(product);
+
+		return true;
 	}
 
 	@Override
 	public boolean statusChange(Integer productId, String status)
 	{
-		Optional<ProductItems> findByid = prodcutRepo.findById(productId);
+		Optional<ProductItems> findByid = productRepo.findById(productId);
 		if (findByid.isPresent())
 		{
 			findByid.get().setActiveSw(status);
-			prodcutRepo.save(findByid.get());
+			productRepo.save(findByid.get());
 			return true;
 		}
 		return false;
@@ -106,7 +128,7 @@ public class PlroductServiceImpl implements ProductService
 	@Override
 	public List<ProductItems> getAllProduct()
 	{
-		return prodcutRepo.findAll();
+		return productRepo.findAll();
 	}
 
 }
